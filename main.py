@@ -4,12 +4,16 @@ import render
 WIDTH   = 480
 HEIGHT  = 640
 GameWindow = None
+GL_render = None
 
 def init():
+
     print('Init')
     global GameWindow
-    GameWindow =  window.Window(WIDTH, HEIGHT, 'Tetris')
-    GameWindow.set_on_draw_listener(lambda: render.render())
+    GameWindow =  window.GLFW(WIDTH, HEIGHT, 'Tetris')          # Note: run this before use Opengl
+    global GL_render
+    GL_render = render.GL_Render(WIDTH, HEIGHT)
+    GameWindow.set_on_draw_listener(lambda: GL_render.render())
     pass
 
 def loop():

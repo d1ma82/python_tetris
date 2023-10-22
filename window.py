@@ -1,6 +1,6 @@
 import glfw
 
-class Window:
+class GLFW:
 
     def __init__(self, width, height, title) -> None:
 

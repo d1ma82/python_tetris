@@ -1,4 +1,5 @@
 import OpenGL.GL as ogl
+import asset
 
 class Programm:
 
@@ -20,6 +21,7 @@ class Programm:
 
 def create_shader(file, type):
 
-    cstr = ''
+    src = asset.Source().open(file)
     shader = ogl.glCreateShader(type)
-    ogl.glShaderSource(shader, 1, cstr, None)
+    ogl.glShaderSource(shader, 1, src, None)
+    ogl.glCompileShader(shader)
