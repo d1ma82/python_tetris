@@ -16,15 +16,20 @@ class GL_Render:
                             0, 1, 3,    # first triangle
                             1, 2, 3]     # second  
         
-                   
-        self.__width = width
-        self.__height = height
+
+        self.__viewport = (width, height)           
         print(f'GL_VERSION: {gl.ogl.glGetString(gl.ogl.GL_VERSION)}' 
               f'\tGL_SHADER_LANG_VERSION: {gl.ogl.glGetString(gl.ogl.GL_SHADING_LANGUAGE_VERSION)}')
+
+
+        self.__output = gl.Programm()
+        self.__output.fragment_shader = gl.create_shader('../shader/out.frag', gl.ogl.GL_FRAGMENT_SHADER)
+        self.__output.vertex_shader   = gl.create_shader('../shader/out.vert', gl.ogl.GL_VERTEX_SHADER)
 
         pass
 
     def render(self):
 
         print('Render')
+        self.__viewport[0]
         pass
