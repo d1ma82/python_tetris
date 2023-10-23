@@ -23,8 +23,10 @@ class GL_Render:
 
 
         self.__output = gl.Programm()
-        self.__output.fragment_shader = gl.create_shader('../shader/out.frag', gl.ogl.GL_FRAGMENT_SHADER)
-        self.__output.vertex_shader   = gl.create_shader('../shader/out.vert', gl.ogl.GL_VERTEX_SHADER)
+        print('Create fragment shader')
+        self.__output.fragment_shader = gl.create_shader('./shader/out.frag', gl.ogl.GL_FRAGMENT_SHADER)
+        print('Create vertex shader')
+        self.__output.vertex_shader   = gl.create_shader('./shader/out.vert', gl.ogl.GL_VERTEX_SHADER)
 
         pass
 

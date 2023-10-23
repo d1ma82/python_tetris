@@ -1,6 +1,6 @@
 #version 330 core
 
-precision mediump float;
+precision mediump float
 out vec4 FragColor;
 in vec2 TexCoord;
 uniform sampler2D camera;

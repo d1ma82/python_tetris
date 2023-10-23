@@ -3,8 +3,8 @@ import render
 
 WIDTH   = 480
 HEIGHT  = 640
-GameWindow = None
-GL_render = None
+GameWindow : window.GLFW
+GL_render : render.GL_Render
 
 def init():
 
