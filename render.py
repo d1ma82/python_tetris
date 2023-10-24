@@ -21,13 +21,8 @@ class GL_Render:
         print(f'GL_VERSION: {gl.ogl.glGetString(gl.ogl.GL_VERSION)}' 
               f'\tGL_SHADER_LANG_VERSION: {gl.ogl.glGetString(gl.ogl.GL_SHADING_LANGUAGE_VERSION)}')
 
-
-        self.__output = gl.Programm()
-        print('Create fragment shader')
-        self.__output.fragment_shader = gl.create_shader('./shader/out.frag', gl.ogl.GL_FRAGMENT_SHADER)
-        print('Create vertex shader')
-        self.__output.vertex_shader   = gl.create_shader('./shader/out.vert', gl.ogl.GL_VERTEX_SHADER)
-
+        self.__output = gl.Programm('./shader/out.frag', './shader/out.vert')
+        
         pass
 
     def render(self):
