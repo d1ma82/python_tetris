@@ -4,24 +4,30 @@ import asset
 
 class Programm:
 
-    def __init__(self, fragment, vertex) -> None:
+    def __init__(self, viewport, fragment, vertex) -> None:
         
+        print('Create buffers')
         self.array_object   = ogl.glGenVertexArrays(1)
         self.vertex_buffer  = ogl.glGenBuffers(1)       
         self.element_buffer = ogl.glGenBuffers(1)
-    
-        self.texture          : ogl.GLuint = 0
+        print('Done')
+        print('Create texture')
+        self.texture          : ogl.GLuint = d2_texture(viewport, None)
+        print(f'texture={self.texture}')
+        print('Create shader')
         self.vertex_shader    : ogl.GLuint = create_shader(vertex, ogl.GL_VERTEX_SHADER)
         self.fragment_shader  : ogl.GLuint = create_shader(fragment, ogl.GL_FRAGMENT_SHADER)
-        
-        if self.vertex_shader == 0 or self.fragment_shader == 0 : return
-        
-        self.id : ogl.GLuint = create_programm(self.vertex_shader, self.fragment_shader)
-        
+        print(f'vertex={self.vertex_shader}, fragment={self.fragment_shader}')
+        print('Create program')
+        if self.vertex_shader == 0 or self.fragment_shader == 0 : 
+            self.id=0
+        else:        
+            self.id = create_programm(self.vertex_shader, self.fragment_shader)
+        print(f'program={self.id}')
         pass
 
     def __del__(self) -> None:
-
+#TODO: create safe delete
         if self.texture > 0: ogl.glDeleteTextures(len(self.texture), self.texture)
         if self.fragment_shader > 0: 
             ogl.glDetachShader(self.id, self.fragment_shader)
@@ -64,7 +70,6 @@ def create_shader(file, type) -> ogl.GLuint:
 
 def create_programm(vertex_shader, fragment_shader)->ogl.GLuint:
 
-    print('Create program')
     prog = ogl.glCreateProgram()
     ogl.glAttachShader(prog, vertex_shader)
     ogl.glAttachShader(prog, fragment_shader)
@@ -79,16 +84,15 @@ def create_programm(vertex_shader, fragment_shader)->ogl.GLuint:
     else: print('Link ok')
     return prog
 
-def d2_texture(width, height, bytes)-> ogl.GLuint:
+def d2_texture(viewport, bytes)-> ogl.GLuint:
     
-    tex = ct.c_int(0)
-    ogl.glGenTextures(1, ct.byref(tex))
+    tex = ogl.glGenTextures(1)
     ogl.glBindTexture(ogl.GL_TEXTURE_2D, tex)
     ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_WRAP_S, ogl.GL_CLAMP_TO_EDGE)
     ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_WRAP_T, ogl.GL_CLAMP_TO_EDGE)
     ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_MIN_FILTER, ogl.GL_LINEAR)
     ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_MAG_FILTER, ogl.GL_LINEAR)
     ogl.glTexImage2D(ogl.GL_TEXTURE_2D, 0, ogl.GL_RGB, 
-                     width, height, 0, ogl.GL_RGB, ogl.GL_UNSIGNED_BYTE, bytes)
+                     viewport[0], viewport[1], 0, ogl.GL_RGB, ogl.GL_UNSIGNED_BYTE, bytes)
     return tex
     

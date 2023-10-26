@@ -10,7 +10,7 @@ def init():
 
     print('Init')
     global GameWindow
-    GameWindow =  window.GLFW(WIDTH, HEIGHT, 'Tetris')          # Note: run this before use Opengl
+    GameWindow =  window.GLFW((WIDTH, HEIGHT), 'Tetris')          # Note: run this before use Opengl
     global GL_render
     GL_render = render.GL_Render(WIDTH, HEIGHT)
     GameWindow.set_on_draw_listener(lambda: GL_render.render())
@@ -24,10 +24,14 @@ def loop():
         GameWindow.draw()
     pass
 
+def clear():
+    pass
+
 def main():
     try:
         init()
         loop()
+        clear()
     except OSError as err:
         print("OS error:", err)
     except Exception as err:

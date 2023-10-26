@@ -21,12 +21,11 @@ class GL_Render:
         print(f'GL_VERSION: {gl.ogl.glGetString(gl.ogl.GL_VERSION)}' 
               f'\tGL_SHADER_LANG_VERSION: {gl.ogl.glGetString(gl.ogl.GL_SHADING_LANGUAGE_VERSION)}')
 
-        self.__output = gl.Programm('./shader/out.frag', './shader/out.vert')
+        self.__output = gl.Programm(self.__viewport, './shader/out.frag', './shader/out.vert')
         
         pass
 
     def render(self):
 
-        print('Render')
-        self.__viewport[0]
+        print(f'Render {self.__viewport}')
         pass
