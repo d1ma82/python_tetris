@@ -2,10 +2,25 @@ import OpenGL.GL as ogl
 import ctypes as ct
 import asset
 
+
+
+vertex = [
+                    # positions              texture coords
+                     1.0,  1.0, 0.0,        1.0, 0.0,     # top right
+                     1.0, -1.0, 0.0,        1.0, 1.0,     # bottom right
+                    -1.0, -1.0, 0.0,        0.0, 1.0,     # bottom left
+                    -1.0,  1.0, 0.0,        0.0, 0.0]     # top left
+indices = [
+                    0, 1, 3,    # first triangle
+                    1, 2, 3]     # second  
+
 class Programm:
 
     def __init__(self, viewport, fragment, vertex) -> None:
         
+        self.viewport=viewport
+        print(f'GL_VERSION: {ogl.glGetString(ogl.GL_VERSION)}' 
+              f'\tGL_SHADER_LANG_VERSION: {ogl.glGetString(ogl.GL_SHADING_LANGUAGE_VERSION)}')
         print('Create buffers')
         self.array_object   = ogl.glGenVertexArrays(1)
         self.vertex_buffer  = ogl.glGenBuffers(1)       
@@ -26,6 +41,48 @@ class Programm:
         print(f'program={self.id}')
         pass
 
+
+    def bind(self):
+
+        ogl.glBindVertexArray(self.array_object)
+        ogl.glBindBuffer(ogl.GL_ELEMENT_ARRAY_BUFFER, self.element_buffer)
+        global indices
+        ogl.glBufferData(ogl.GL_ELEMENT_ARRAY_BUFFER, len(indices), indices, ogl.GL_STATIC_DRAW)
+        
+        ogl.glBindBuffer(ogl.GL_ARRAY_BUFFER, self.vertex_buffer)
+        global vertex
+        ogl.glBufferData(ogl.GL_ARRAY_BUFFER, len(vertex), vertex, ogl.GL_STATIC_DRAW)
+        
+        ogl.glVertexAttribPointer(0, 3, ogl.GL_FLOAT, ogl.GL_FALSE, 5*len(vertex), ct.c_void_p(0))
+        ogl.glEnableVertexAttribArray(0)
+
+        ogl.glVertexAttribPointer(1, 2, ogl.GL_FLOAT, ogl.GL_FALSE, 5*len(vertex), ct.c_void_p(3))
+        ogl.glEnableVertexAttribArray(1)
+
+        ogl.glUseProgram(self.id)
+        ogl.glUniform1i(ogl.glGetUniformLocation(self.id, 'camera'), 0)
+        ogl.glActiveTexture(ogl.GL_TEXTURE0)
+
+        ogl.glBindVertexArray(0)
+        
+
+
+    def build(self, frame):
+
+        #filter-apply()
+        ogl.glViewport(0,0, self.viewport[0], self.viewport[1])
+        ogl.glClearColor(0.0, 0.0, 0.0, 0.0)
+        ogl.glClear(ogl.GL_COLOR_BUFFER_BIT)
+
+        ogl.glUseProgram(self.id)
+        ogl.glBindVertexArray(self.array_object)
+        ogl.glBindTexture(ogl.GL_TEXTURE_2D, self.texture)
+        ogl.glTexImage2D(ogl.GL_TEXTURE_2D, 0, ogl.GL_RGB, self.viewport[0], self.viewport[1], 0, ogl.GL_RGB, ogl.GL_UNSIGNED_BYTE, frame)
+        ogl.glDrawElements(ogl.GL_TRIANGLES, 6, ogl.GL_UNSIGNED_INT, 0)
+        ogl.glBindTexture(ogl.GL_TEXTURE_2D, 0)
+        ogl.glBindVertexArray(0)
+
+        
     def __del__(self) -> None:
 #TODO: create safe delete
         if self.texture > 0: ogl.glDeleteTextures(len(self.texture), self.texture)
