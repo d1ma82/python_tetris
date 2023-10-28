@@ -1,155 +1,168 @@
-import OpenGL.GL as ogl
+from OpenGL.GL import * # type: ignore
+from array import array
 import ctypes as ct
+import logging
 import asset
 
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(name)s %(asctime)s %(levelname)s %(message)s")
+handler.setFormatter(formatter)
+log.addHandler(handler)
 
-vertex = [
+log.info(f'Module {__name__}')
+
+vertex = array('f', [
                     # positions              texture coords
                      1.0,  1.0, 0.0,        1.0, 0.0,     # top right
                      1.0, -1.0, 0.0,        1.0, 1.0,     # bottom right
                     -1.0, -1.0, 0.0,        0.0, 1.0,     # bottom left
-                    -1.0,  1.0, 0.0,        0.0, 0.0]     # top left
-indices = [
+                    -1.0,  1.0, 0.0,        0.0, 0.0])    # top left
+
+indices = array('i', [
                     0, 1, 3,    # first triangle
-                    1, 2, 3]     # second  
+                    1, 2, 3])     # second  
 
-class Programm:
+class Scene:
 
-    def __init__(self, viewport, fragment, vertex) -> None:
+    def __init__(self, viewport, fragment_src, vertex_src) -> None:
         
+        self.__fsrc = fragment_src
+        self.__vsrc = vertex_src
         self.viewport=viewport
-        print(f'GL_VERSION: {ogl.glGetString(ogl.GL_VERSION)}' 
-              f'\tGL_SHADER_LANG_VERSION: {ogl.glGetString(ogl.GL_SHADING_LANGUAGE_VERSION)}')
-        print('Create buffers')
-        self.array_object   = ogl.glGenVertexArrays(1)
-        self.vertex_buffer  = ogl.glGenBuffers(1)       
-        self.element_buffer = ogl.glGenBuffers(1)
-        print('Done')
-        print('Create texture')
-        self.texture          : ogl.GLuint = d2_texture(viewport, None)
-        print(f'texture={self.texture}')
-        print('Create shader')
-        self.vertex_shader    : ogl.GLuint = create_shader(vertex, ogl.GL_VERTEX_SHADER)
-        self.fragment_shader  : ogl.GLuint = create_shader(fragment, ogl.GL_FRAGMENT_SHADER)
-        print(f'vertex={self.vertex_shader}, fragment={self.fragment_shader}')
-        print('Create program')
-        if self.vertex_shader == 0 or self.fragment_shader == 0 : 
-            self.id=0
-        else:        
-            self.id = create_programm(self.vertex_shader, self.fragment_shader)
-        print(f'program={self.id}')
+        log.info(f'GL_VERSION: {glGetString(GL_VERSION)}' 
+              f'\tGL_SHADER_LANG_VERSION: {glGetString(GL_SHADING_LANGUAGE_VERSION)}')
+       
+        log.debug('Create buffers')
+        self.array_object   = glGenVertexArrays(1)
+        self.vertex_buffer  = glGenBuffers(1)       
+        self.element_buffer = glGenBuffers(1)
+        
+        log.debug('Create texture')
+        self.texture = d2_texture(self.viewport, None)
+
+        log.debug('Create shaders')
+        self.vertex_shader    = create_shader(self.__vsrc, GL_VERTEX_SHADER)
+        self.fragment_shader  = create_shader(self.__fsrc, GL_FRAGMENT_SHADER)
+        
+        log.debug('Create program')
+        self.id = create_programm(self.vertex_shader, self.fragment_shader)
+
+        log.debug('Bind buffers')
+        self.__bind()
         pass
 
+    def __bind(self):
 
-    def bind(self):
-
-        ogl.glBindVertexArray(self.array_object)
-        ogl.glBindBuffer(ogl.GL_ELEMENT_ARRAY_BUFFER, self.element_buffer)
-        global indices
-        ogl.glBufferData(ogl.GL_ELEMENT_ARRAY_BUFFER, len(indices), indices, ogl.GL_STATIC_DRAW)
+        glBindVertexArray(self.array_object)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.element_buffer)
+        log.debug('GL_ELEMENT_ARRAY_BUFFER')
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.tobytes(), GL_STATIC_DRAW)
         
-        ogl.glBindBuffer(ogl.GL_ARRAY_BUFFER, self.vertex_buffer)
-        global vertex
-        ogl.glBufferData(ogl.GL_ARRAY_BUFFER, len(vertex), vertex, ogl.GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer)
+        log.debug('GL_ARRAY_BUFFER')
+        glBufferData(GL_ARRAY_BUFFER, vertex.tobytes(), GL_STATIC_DRAW)
         
-        ogl.glVertexAttribPointer(0, 3, ogl.GL_FLOAT, ogl.GL_FALSE, 5*len(vertex), ct.c_void_p(0))
-        ogl.glEnableVertexAttribArray(0)
+        log.debug('Vertex Attrib Pointer 0')
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*len(vertex), ct.c_void_p(0))
+        glEnableVertexAttribArray(0)
 
-        ogl.glVertexAttribPointer(1, 2, ogl.GL_FLOAT, ogl.GL_FALSE, 5*len(vertex), ct.c_void_p(3))
-        ogl.glEnableVertexAttribArray(1)
+        log.debug('Vertex Attrib Pointer 1')
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*len(vertex), ct.c_void_p(3))
+        glEnableVertexAttribArray(1)
+        
+        glUseProgram(self.id)
+        glUniform1i(glGetUniformLocation(self.id, 'camera'), 0)
+        glActiveTexture(GL_TEXTURE0)
 
-        ogl.glUseProgram(self.id)
-        ogl.glUniform1i(ogl.glGetUniformLocation(self.id, 'camera'), 0)
-        ogl.glActiveTexture(ogl.GL_TEXTURE0)
-
-        ogl.glBindVertexArray(0)
+        glBindVertexArray(0)
         
 
 
     def build(self, frame):
 
         #filter-apply()
-        ogl.glViewport(0,0, self.viewport[0], self.viewport[1])
-        ogl.glClearColor(0.0, 0.0, 0.0, 0.0)
-        ogl.glClear(ogl.GL_COLOR_BUFFER_BIT)
+        glViewport(0,0, self.viewport[0], self.viewport[1])
+        glClearColor(0.0, 0.0, 0.0, 0.0)
+        glClear(GL_COLOR_BUFFER_BIT)
 
-        ogl.glUseProgram(self.id)
-        ogl.glBindVertexArray(self.array_object)
-        ogl.glBindTexture(ogl.GL_TEXTURE_2D, self.texture)
-        ogl.glTexImage2D(ogl.GL_TEXTURE_2D, 0, ogl.GL_RGB, self.viewport[0], self.viewport[1], 0, ogl.GL_RGB, ogl.GL_UNSIGNED_BYTE, frame)
-        ogl.glDrawElements(ogl.GL_TRIANGLES, 6, ogl.GL_UNSIGNED_INT, 0)
-        ogl.glBindTexture(ogl.GL_TEXTURE_2D, 0)
-        ogl.glBindVertexArray(0)
+        glUseProgram(self.id)
+        glBindVertexArray(self.array_object)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.viewport[0], self.viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, frame)
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+        glBindVertexArray(0)
 
         
     def __del__(self) -> None:
 #TODO: create safe delete
-        if self.texture > 0: ogl.glDeleteTextures(len(self.texture), self.texture)
+        if self.texture > 0: glDeleteTextures(1, [self.texture])
         if self.fragment_shader > 0: 
-            ogl.glDetachShader(self.id, self.fragment_shader)
-            ogl.glDeleteShader(self.fragment_shader)
+            if self.id > 0: glDetachShader(self.id, self.fragment_shader)
+            glDeleteShader(self.fragment_shader)
         
         if self.vertex_shader > 0: 
-            ogl.glDetachShader(self.id, self.vertex_shader)
-            ogl.glDeleteShader(self.vertex_shader)
+            if self.id > 0: glDetachShader(self.id, self.vertex_shader)
+            glDeleteShader(self.vertex_shader)
 
-        if self.id > 0: ogl.glDeleteProgram(self.id)
+        if self.id > 0: glDeleteProgram(self.id)
 
-        ogl.glDeleteBuffers(1, self.element_buffer)
-        ogl.glDeleteBuffers(1, self.vertex_buffer)
-        ogl.glDeleteVertexArrays(1, self.array_object)
+        glDeleteBuffers(1, [self.element_buffer])
+        glDeleteBuffers(1, [self.vertex_buffer])
+        glDeleteVertexArrays(1, [self.array_object])
 
         pass
 
 
-def create_shader(file, type) -> ogl.GLuint:
+def create_shader(file, type) -> int:
 
     src: asset.Source = asset.Source(file)
     if not src.is_opened(): return 0
 
-    shader = ogl.glCreateShader(type)
-    ogl.glShaderSource(shader, src.read())
-    print('Compile shader')
-    ogl.glCompileShader(shader)
+    shader: int = glCreateShader(type)
+    glShaderSource(shader, src.read())
+    glCompileShader(shader)
 
     is_compiled = ct.c_int(0)
-    ogl.glGetShaderiv(shader, ogl.GL_COMPILE_STATUS, ct.byref(is_compiled))
+    glGetShaderiv(shader, GL_COMPILE_STATUS, ct.byref(is_compiled))
     
-    if is_compiled.value == ogl.GL_FALSE:
+    if is_compiled.value == GL_FALSE:
         
-        print(f'Could not compile\n {ogl.glGetShaderInfoLog(shader)}')
-        ogl.glDeleteShader(shader)
+        log.error(f'Could not compile\n {glGetShaderInfoLog(shader)}')
+        glDeleteShader(shader)
         shader = 0
-    else: print('Compile OK')
 
     return shader
 
-def create_programm(vertex_shader, fragment_shader)->ogl.GLuint:
+def create_programm(vertex_shader, fragment_shader) -> int:
 
-    prog = ogl.glCreateProgram()
-    ogl.glAttachShader(prog, vertex_shader)
-    ogl.glAttachShader(prog, fragment_shader)
-    ogl.glLinkProgram(prog)
+    if vertex_shader == 0 or fragment_shader == 0: return 0
+
+    prog = glCreateProgram()
+    glAttachShader(prog, vertex_shader)
+    glAttachShader(prog, fragment_shader)
+    glLinkProgram(prog)
     is_linked = ct.c_int()
-    ogl.glGetProgramiv(prog, ogl.GL_LINK_STATUS, ct.byref(is_linked))
+    glGetProgramiv(prog, GL_LINK_STATUS, ct.byref(is_linked))
 
-    if is_linked == ogl.GL_FALSE:
-        print('Could not link program')
-        ogl.glDeleteProgram(prog)
+    if is_linked == GL_FALSE:
+        log.error('Could not link program')
+        glDeleteProgram(prog)
         prog=0
-    else: print('Link ok')
     return prog
 
-def d2_texture(viewport, bytes)-> ogl.GLuint:
+def d2_texture(viewport, bytes) -> int:
     
-    tex = ogl.glGenTextures(1)
-    ogl.glBindTexture(ogl.GL_TEXTURE_2D, tex)
-    ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_WRAP_S, ogl.GL_CLAMP_TO_EDGE)
-    ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_WRAP_T, ogl.GL_CLAMP_TO_EDGE)
-    ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_MIN_FILTER, ogl.GL_LINEAR)
-    ogl.glTexParameteri(ogl.GL_TEXTURE_2D, ogl.GL_TEXTURE_MAG_FILTER, ogl.GL_LINEAR)
-    ogl.glTexImage2D(ogl.GL_TEXTURE_2D, 0, ogl.GL_RGB, 
-                     viewport[0], viewport[1], 0, ogl.GL_RGB, ogl.GL_UNSIGNED_BYTE, bytes)
+    tex = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, tex)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 
+                     viewport[0], viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, bytes)
     return tex
     
