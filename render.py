@@ -6,7 +6,7 @@ class GL_Render:
     def __init__(self, viewport:tuple) -> None:    
 
         self.__viewport = viewport           
-        self.__output = sc.Scene(self.__viewport, './shader/out.frag', './shader/out.vert')
+        self.__scene = sc.Scene(self.__viewport, './shader/out.frag', './shader/out.vert')
         self.__filters:list[Filter] = None
         pass
     
@@ -15,5 +15,5 @@ class GL_Render:
     def render(self):
 
         for f in self.__filters: f.apply()
-        
+        self.__scene.build(self.__filters[len(self.__filters)-1].frame())
         pass

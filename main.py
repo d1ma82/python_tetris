@@ -1,3 +1,4 @@
+import traceback
 import window
 import render
 import tetris
@@ -39,7 +40,7 @@ def main():
     except OSError as err:
         print("OS error:", err)
     except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}")
+        print(f"Unexpected {err=}, {type(err)=}\n{traceback.print_tb(err.__traceback__)}")
     finally:
         clear()
     
