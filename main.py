@@ -1,5 +1,6 @@
 import window
 import render
+import tetris
 
 WIDTH   = 480
 HEIGHT  = 640
@@ -11,9 +12,12 @@ def init():
     print('Init')
     global GameWindow
     GameWindow =  window.GLFW((WIDTH, HEIGHT), 'Tetris')          # Note: run this before use Opengl
-    global GL_render
-    GL_render = render.GL_Render(WIDTH, HEIGHT)
     GameWindow.set_on_draw_listener(lambda: GL_render.render())
+
+    global GL_render
+    GL_render = render.GL_Render((WIDTH, HEIGHT))
+    GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), tetris.Listeners())])
+
     pass
 
 def loop():
@@ -31,13 +35,13 @@ def main():
     try:
         init()
         loop()
-        clear()
+        
     except OSError as err:
         print("OS error:", err)
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
-    else:
-        return
+    finally:
+        clear()
     
 
 if __name__ == '__main__':

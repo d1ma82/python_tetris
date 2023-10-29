@@ -2,15 +2,11 @@ from OpenGL.GL import * # type: ignore
 from array import array
 import ctypes as ct
 import logging
-import asset
+import sett
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-formatter = logging.Formatter("%(name)s %(asctime)s %(levelname)s %(message)s")
-handler.setFormatter(formatter)
-log.addHandler(handler)
+log.setLevel(sett.debug_level)
+log.addHandler(sett.handler)
 
 log.info(f'Module {__name__}')
 
@@ -51,10 +47,10 @@ class Scene:
         self.id = create_programm(self.vertex_shader, self.fragment_shader)
 
         log.debug('Bind buffers')
-        self.__bind()
+        self.__bind_buffers()
         pass
 
-    def __bind(self):
+    def __bind_buffers(self):
 
         glBindVertexArray(self.array_object)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.element_buffer)
@@ -81,9 +77,8 @@ class Scene:
         
 
 
-    def build(self, frame):
+    def build(self, frame: array):
 
-        #filter-apply()
         glViewport(0,0, self.viewport[0], self.viewport[1])
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClear(GL_COLOR_BUFFER_BIT)
@@ -119,11 +114,9 @@ class Scene:
 
 def create_shader(file, type) -> int:
 
-    src: asset.Source = asset.Source(file)
-    if not src.is_opened(): return 0
-
     shader: int = glCreateShader(type)
-    glShaderSource(shader, src.read())
+    with open(file) as src:
+        glShaderSource(shader, src.read())
     glCompileShader(shader)
 
     is_compiled = ct.c_int(0)
