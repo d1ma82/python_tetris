@@ -1,22 +1,22 @@
 import traceback
 import window
-import render
+import gl_render
 import tetris
 
 WIDTH   = 480
 HEIGHT  = 640
 GameWindow : window.GLFW
-GL_render : render.GL_Render
+GL_render : gl_render.GL_Render
 
 def init():
 
     print('Init')
     global GameWindow
     GameWindow =  window.GLFW((WIDTH, HEIGHT), 'Tetris')          # Note: run this before use Opengl
-    GameWindow.set_on_draw_listener(lambda: GL_render.render())
-
+    
     global GL_render
-    GL_render = render.GL_Render((WIDTH, HEIGHT))
+    GL_render = gl_render.GL_Render((WIDTH, HEIGHT))
+    GameWindow.set_render(GL_render)
     GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), tetris.Listeners())])
 
     pass

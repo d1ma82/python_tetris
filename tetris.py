@@ -54,9 +54,11 @@ class Tetris(Filter):
         self.__score                = 0
         self.__SZ                   = viewport[0]//Tetris.SQ_PER_LINE       # size of the square
         self.__viewport             = viewport
-        self.__zeros                = np.zeros((viewport[0], viewport[1], 3), dtype=np.int8)
-        self.__img                  = np.zeros((viewport[0], viewport[1], 3), dtype=np.int8)
-        self.__current, self.__previos, self.__next      = 0, 0, 0          # mino key mem
+        self.__zeros                = np.zeros((viewport[0], viewport[1], 3), order='C', dtype=np.int8)
+        self.__img                  = np.zeros((viewport[0], viewport[1], 3), order='C', dtype=np.int8)
+        self.__current=0
+        self.__previos=0
+        self.__next=0          # mino key mem
         self.__game_over_flag         = False
         self.__minos:Map              = {}                                   # minos storage
         self.__listeners: Listeners   =   listeners
@@ -94,7 +96,7 @@ class Tetris(Filter):
         random.shuffle(rgb)
         color = tuple(rgb)
         pos_x = random.randrange(4, Tetris.SQ_PER_LINE-4)*self.__SZ
-        pos_y = 0
+        pos_y = self.__SZ*4
         log.info(f'New mino id {id}; type {type}; color {color}; x {pos_x}')
         mino = self.__create_mino_internal(type, Orientation.O1, color, pos_x, pos_y)
         self.__minos[id] = mino
@@ -115,16 +117,16 @@ class Tetris(Filter):
     def __delete_lines(self, deleted:list):
         pass
 
-    def frame(self)->bytes: return self.__img.tobytes()
+    def frame(self)->np.ndarray: return self.__img
 
     def apply(self) -> None:
 
-        if not self.__current:
-            self.__current = self.__create_mino() if self.__next==0 else self.__next
+        if self.__current==0:
+            self.__current = self.__create_mino()# if self.__next==0 else self.__next
              #self.__next = self.__create_mino()
 
         self.__previos = self.__current
-        self.__current = 0
+        #self.__current = 0
 
         self.__img = np.copy(self.__zeros)
 
@@ -133,6 +135,7 @@ class Tetris(Filter):
                 if brick.enabled: rectangle(self.__img, brick.tl, 
                                             Point(brick.tl.x+self.__SZ, brick.tl.y+self.__SZ),
                                             1, brick.color)
+        np.save('img.bin', self.__img)
         # TODO: Test draw of line
 
 

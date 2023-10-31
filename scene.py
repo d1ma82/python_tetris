@@ -1,6 +1,7 @@
 from OpenGL.GL import * # type: ignore
 from array import array
 import ctypes as ct
+import numpy as np
 import logging
 import sett
 
@@ -16,10 +17,12 @@ vertex = array('f', [
                      1.0, -1.0, 0.0,        1.0, 1.0,     # bottom right
                     -1.0, -1.0, 0.0,        0.0, 1.0,     # bottom left
                     -1.0,  1.0, 0.0,        0.0, 0.0])    # top left
+vertex = np.array(vertex, dtype=np.float32)
 
 indices = array('i', [
                     0, 1, 3,    # first triangle
                     1, 2, 3])     # second  
+indices = np.array(indices, dtype=np.uint32)
 
 class Scene:
 
@@ -37,7 +40,7 @@ class Scene:
         self.element_buffer = glGenBuffers(1)
         
         log.debug('Create texture')
-        self.texture = d2_texture(self.viewport, None)
+        self.texture = d2_texture(self.viewport)
 
         log.debug('Create shaders')
         self.vertex_shader    = create_shader(self.__vsrc, GL_VERTEX_SHADER)
@@ -55,18 +58,18 @@ class Scene:
         glBindVertexArray(self.array_object)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.element_buffer)
         log.debug('GL_ELEMENT_ARRAY_BUFFER')
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.tobytes(), GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.itemsize*len(indices), indices, GL_STATIC_DRAW)
         
         glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer)
         log.debug('GL_ARRAY_BUFFER')
-        glBufferData(GL_ARRAY_BUFFER, vertex.tobytes(), GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertex.itemsize*len(vertex), vertex, GL_STATIC_DRAW)
         
         log.debug('Vertex Attrib Pointer 0')
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*len(vertex), ct.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*vertex.itemsize, ct.c_void_p(0))
         glEnableVertexAttribArray(0)
 
         log.debug('Vertex Attrib Pointer 1')
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*len(vertex), ct.c_void_p(3))
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*vertex.itemsize, ct.c_void_p(3*vertex.itemsize))
         glEnableVertexAttribArray(1)
         
         glUseProgram(self.id)
@@ -77,7 +80,7 @@ class Scene:
         
 
 
-    def build(self, frame: array):
+    def build(self, frame:np.ndarray):
 
         glViewport(0,0, self.viewport[0], self.viewport[1])
         glClearColor(0.0, 0.0, 0.0, 0.0)
@@ -86,7 +89,7 @@ class Scene:
         glUseProgram(self.id)
         glBindVertexArray(self.array_object)
         glBindTexture(GL_TEXTURE_2D, self.texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.viewport[0], self.viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, frame)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.viewport[0], self.viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, frame.data)
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
         glBindTexture(GL_TEXTURE_2D, 0)
         glBindVertexArray(0)
@@ -147,7 +150,7 @@ def create_programm(vertex_shader, fragment_shader) -> int:
         prog=0
     return prog
 
-def d2_texture(viewport, bytes) -> int:
+def d2_texture(viewport, data=None) -> int:
     
     tex = glGenTextures(1)
     glBindTexture(GL_TEXTURE_2D, tex)
@@ -156,6 +159,6 @@ def d2_texture(viewport, bytes) -> int:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 
-                     viewport[0], viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, bytes)
+                     viewport[0], viewport[1], 0, GL_RGB, GL_UNSIGNED_BYTE, data)
     return tex
     
