@@ -50,12 +50,61 @@ class Minos():
                         mino[2].tl = Point(pos_x, pos_y+2*sz)
                         mino[3].tl = Point(pos_x, pos_y+3*sz)
 
+            case Type.Z:
+                match orientation:
+                    case Orientation.O1:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x+sz, pos_y)
+                        mino[2].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x+2*sz, pos_y+sz)
+                    case Orientation.O2:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x-sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x-sz, pos_y+2*sz)
+
+            case Type.RZ:
+                match orientation:
+                    case Orientation.O1:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x-sz, pos_y)
+                        mino[2].tl = Point(pos_x-sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x-2*sz, pos_y+sz)
+                    case Orientation.O2:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+2*sz)
+
+            case Type.L:
+                match orientation:
+                    case Orientation.O1:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x-sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x-2*sz, pos_y+sz)
+                    case Orientation.O2:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+2*sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+2*sz)
+                    case Orientation.O3:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y-sz)
+                        mino[2].tl = Point(pos_x+sz, pos_y-sz)
+                        mino[3].tl = Point(pos_x+2*sz, pos_y-sz)
+                    case Orientation.O4:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x+sz, pos_y)
+                        mino[2].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x+3*sz, pos_y+2*sz)
+
         return mino
 
     @staticmethod
     def create_mino(sq_per_line, sz)->list[Brick]: 
 
-        type = Type.LINE #Type(random.randrange(Type.LINE.value, Type.SQUARE.value))
+        type = Type.Z #Type(random.randrange(Type.LINE.value, Type.SQUARE.value))
         rgb = [255,0,0]
         random.shuffle(rgb)
         color = tuple(rgb)
