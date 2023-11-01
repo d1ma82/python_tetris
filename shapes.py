@@ -25,7 +25,7 @@ class Brick:
         self.tl: Point                  = tl              # top left point
         self.enabled                    = True
 
-class Minos():
+class MinoFactory():
 
     @staticmethod    
     def __create_mino_internal(type:Type, orientation:Orientation, color:tuple, pos_x, pos_y, sz)->list[Brick]:
@@ -99,16 +99,66 @@ class Minos():
                         mino[2].tl = Point(pos_x+sz, pos_y+sz)
                         mino[3].tl = Point(pos_x+3*sz, pos_y+2*sz)
 
+            case Type.RL:
+                match orientation:
+                    case Orientation.O1:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x+2*sz, pos_y+sz)
+                    case Orientation.O2:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x-sz, pos_y)
+                        mino[2].tl = Point(pos_x-sz, pos_y+sz)
+                        mino[3].tl = Point(pos_x-sz, pos_y+2*sz)
+                    case Orientation.O3:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x+sz, pos_y)
+                        mino[2].tl = Point(pos_x+2*sz, pos_y)
+                        mino[3].tl = Point(pos_x+2*sz, pos_y+sz)
+                    case Orientation.O4:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+2*sz)
+                        mino[3].tl = Point(pos_x-sz, pos_y+2*sz)
+            case Type.T:
+                match orientation:
+                    case Orientation.O1:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x-sz, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+sz)
+                    case Orientation.O2:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+2*sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+sz)
+                    case Orientation.O3:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x+sz, pos_y)
+                        mino[2].tl = Point(pos_x+2*sz, pos_y)
+                        mino[3].tl = Point(pos_x+sz, pos_y+sz)
+                    case Orientation.O4:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+2*sz)
+                        mino[3].tl = Point(pos_x-sz, pos_y+sz)
+            case Type.SQUARE:
+                        mino[0].tl = Point(pos_x, pos_y)
+                        mino[1].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[2].tl = Point(pos_x, pos_y+sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+sz)
+
         return mino
 
     @staticmethod
     def create_mino(sq_per_line, sz)->list[Brick]: 
 
-        type = Type.Z #Type(random.randrange(Type.LINE.value, Type.SQUARE.value))
+        type = Type(random.randrange(Type.LINE.value, Type.SQUARE.value))
         rgb = [255,0,0]
         random.shuffle(rgb)
         color = tuple(rgb)
         pos_x = random.randrange(4, sq_per_line-4)*sz
-        pos_y = sz*5
-        return Minos.__create_mino_internal(type, Orientation.O1, color, pos_x, pos_y, sz)
+        pos_y = 0
+        return MinoFactory.__create_mino_internal(type, Orientation.O1, color, pos_x, pos_y, sz)
 

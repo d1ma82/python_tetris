@@ -18,9 +18,13 @@ def init():
     GL_render = gl_render.GL_Render((WIDTH, HEIGHT))
     GameWindow.set_render(GL_render)
 
-    GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), tetris.Listeners(), )])
-
-    pass
+    listeners = tetris.Listeners()
+    listeners.on_ground = lambda _: print("On ground sound")
+    listeners.on_left   = lambda _: print("On left sound")
+    listeners.on_right  = lambda _: print("On right sound")
+    listeners.on_rotate = lambda _: print("On rotate sounnd")
+    listeners.on_delete = lambda _: print("On delete sound")
+    GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), listeners)])
 
 def loop():
 

@@ -16,6 +16,9 @@ class GL_Render(Render):
 
     def render(self):
 
+        l = len(self.__filters)
+        if l == 0: return
+
         for f in self.__filters: f.apply()
-        self.__scene.build(self.__filters[0].frame())
+        self.__scene.build(self.__filters[l-1].frame())
         pass
