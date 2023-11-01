@@ -5,3 +5,6 @@ debug_level = DEBUG
 handler = StreamHandler()
 formatter = Formatter("%(name)s %(asctime)s %(levelname)s %(message)s")
 handler.setFormatter(formatter)
+
+
+shapes_module = 'shapes'

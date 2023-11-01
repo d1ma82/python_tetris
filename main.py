@@ -17,7 +17,8 @@ def init():
     global GL_render
     GL_render = gl_render.GL_Render((WIDTH, HEIGHT))
     GameWindow.set_render(GL_render)
-    GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), tetris.Listeners())])
+
+    GL_render.attach_filterlist([tetris.Tetris((WIDTH, HEIGHT), tetris.Listeners(), )])
 
     pass
 
