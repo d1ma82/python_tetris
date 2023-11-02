@@ -1,8 +1,11 @@
 import glfw
+from typing import Callable
 from render import Render
 
-class GLFW:
+key_listener = Callable[['int', 'int'], None]   #key, action
 
+class GLFW:
+    
     def __init__(self, viewport, title) -> None:
 
         print(f"Create window {viewport}")
@@ -11,9 +14,16 @@ class GLFW:
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)
         self.__window = glfw.create_window(viewport[0], viewport[1], title, None, None)
         self.__is_set_render = False
+        self.is_set_key_listener = False
         glfw.make_context_current(self.__window)
+        glfw.set_key_callback(self.__window, lambda _, p1, p2, p3, p4: self.__key_listener(p1, p3))
         print("Done.")
         pass
+
+    def set_on_key_listener(self, on_key: key_listener):
+
+        self.__key_listener=on_key
+        self.is_set_key_listener = True
 
     def set_render(self, render: Render):
 
