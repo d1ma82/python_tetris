@@ -76,6 +76,20 @@ class Tetris(Filter):
         return True
     
     def __move_left(self):
+
+        center = self.__SZ//2
+        if self.__current==0 or self.__game_over_flag: return
+
+        for c_brick in self.__minos[self.__current]:
+            log.debug("Return cause left side")
+            if c_brick.tl.x<0:return
+
+        for key in self.__minos:
+            if self.__current==key or self.__next==key: continue
+
+        for brick in self.__minos[key]:
+            if brick.enabled and c_brick.tl.x-self.__SZ<brick.tl.x+self.__SZ:
+                
         pass
 
     def __move_right(self):
