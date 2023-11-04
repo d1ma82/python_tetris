@@ -2,7 +2,10 @@ import glfw
 from typing import Callable
 from render import Render
 
-key_listener = Callable[['int', 'int'], None]   #key, action
+key_press_event = Callable[['int', 'int'], None]   #key, action
+
+class Events:
+    on_key_press: key_press_event
 
 class GLFW:
     
@@ -13,22 +16,17 @@ class GLFW:
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 2)
         self.__window = glfw.create_window(viewport[0], viewport[1], title, None, None)
-        self.__is_set_render = False
-        self.is_set_key_listener = False
+        self.__render = None
         glfw.make_context_current(self.__window)
-        glfw.set_key_callback(self.__window, lambda _, p1, p2, p3, p4: self.__key_listener(p1, p3))
         print("Done.")
         pass
 
-    def set_on_key_listener(self, on_key: key_listener):
+    def set_event_listener(self, events: Events):
+        self.__events=events
+        if self.__events != None and self.__events.on_key_press != None:
+            glfw.set_key_callback(self.__window, lambda _, p1, p2, p3, p4: self.__events.on_key_press(p1, p3))
 
-        self.__key_listener=on_key
-        self.is_set_key_listener = True
-
-    def set_render(self, render: Render):
-
-        self.__render = render
-        self.__is_set_render = True
+    def set_render(self, render: Render): self.__render = render        # we cant add to init, cause window must create first
 
     def should_close(self):
         return glfw.window_should_close(self.__window)
@@ -38,7 +36,7 @@ class GLFW:
 
     def draw(self):
         
-        if self.__is_set_render: self.__render.render()
+        self.__render.render()
         glfw.swap_buffers(self.__window)
         glfw.poll_events()
         pass

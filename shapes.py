@@ -97,7 +97,7 @@ class MinoFactory():
                         mino[0].tl = Point(pos_x, pos_y)
                         mino[1].tl = Point(pos_x+sz, pos_y)
                         mino[2].tl = Point(pos_x+sz, pos_y+sz)
-                        mino[3].tl = Point(pos_x+3*sz, pos_y+2*sz)
+                        mino[3].tl = Point(pos_x+sz, pos_y+2*sz)
 
             case Type.RL:
                 match orientation:
@@ -145,7 +145,7 @@ class MinoFactory():
                         mino[3].tl = Point(pos_x-sz, pos_y+sz)
             case Type.SQUARE:
                         mino[0].tl = Point(pos_x, pos_y)
-                        mino[1].tl = Point(pos_x+sz, pos_y+sz)
+                        mino[1].tl = Point(pos_x+sz, pos_y)
                         mino[2].tl = Point(pos_x, pos_y+sz)
                         mino[3].tl = Point(pos_x+sz, pos_y+sz)
 
@@ -154,11 +154,33 @@ class MinoFactory():
     @staticmethod
     def create_mino(sq_per_line, sz)->list[Brick]: 
 
-        type = Type(random.randrange(Type.LINE.value, Type.SQUARE.value))
+        type = Type(random.randrange(Type.LINE.value, Type.SQUARE.value+1))
         rgb = [255,0,0]
         random.shuffle(rgb)
         color = tuple(rgb)
         pos_x = random.randrange(4, sq_per_line-4)*sz
         pos_y = 0
         return MinoFactory.__create_mino_internal(type, Orientation.O1, color, pos_x, pos_y, sz)
+    
+    @staticmethod
+    def rotated(brick:Brick, sz:int)->list[Brick]:
+        match brick.type:
+            case Type.LINE | Type.Z | Type.RZ:
 
+                match brick.orientation:
+                    case Orientation.O1:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O2, brick.color, brick.tl.x, brick.tl.y, sz)
+                    case Orientation.O2:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O1, brick.color, brick.tl.x, brick.tl.y, sz)
+            
+            case Type.L | Type.RL | Type.T:
+                
+                match brick.orientation:
+                    case Orientation.O1:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O2, brick.color, brick.tl.x, brick.tl.y, sz)
+                    case Orientation.O2:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O3, brick.color, brick.tl.x, brick.tl.y, sz)
+                    case Orientation.O3:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O4, brick.color, brick.tl.x, brick.tl.y, sz)
+                    case Orientation.O4:
+                        return MinoFactory.__create_mino_internal(brick.type, Orientation.O1, brick.color, brick.tl.x, brick.tl.y, sz)
